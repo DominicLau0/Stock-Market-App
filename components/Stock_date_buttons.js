@@ -12,7 +12,7 @@ export default function Stock_date_buttons(props){
                             (() => {
                                 if(props.option === option){
                                     return(
-                                        <Button mode="text" key={props.option} labelStyle={{ fontWeight:"bold", fontSize: 12, marginRight: 5, marginLeft: 5 }} style={{marginRight: 5}} textColor="#b8860b" rippleColor="rgba(184, 134, 11, 0.3)" onPress={() => props.change_graph(option)}>{option}</Button>
+                                        <Button mode="text" key={option} labelStyle={{ fontWeight:"bold", fontSize: 12, marginRight: 5, marginLeft: 5 }} style={{marginRight: 5}} textColor="#b8860b" rippleColor="rgba(184, 134, 11, 0.3)" onPress={() => props.change_graph(option)}>{option}</Button>
                                     )
                                 }else{
                                     return(
