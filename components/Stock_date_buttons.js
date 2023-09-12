@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { Button } from 'react-native-paper';
 
 export default function Stock_date_buttons(props){
@@ -5,23 +6,23 @@ export default function Stock_date_buttons(props){
 
     return(
         <>
-            {stock_time_options.map(option => {
+            {stock_time_options.map((option, index) => {
                 return(
-                    <>
+                    <Fragment key={index}>
                         {
                             (() => {
                                 if(props.option === option){
                                     return(
-                                        <Button mode="text" key={option} labelStyle={{ fontWeight:"bold", fontSize: 12, marginRight: 5, marginLeft: 5 }} style={{marginRight: 5}} textColor="#b8860b" rippleColor="rgba(184, 134, 11, 0.3)" onPress={() => props.change_graph(option)}>{option}</Button>
+                                        <Button mode="text" labelStyle={{ fontWeight:"bold", fontSize: 12, marginRight: 5, marginLeft: 5 }} style={{marginRight: 5}} textColor="#b8860b" rippleColor="rgba(184, 134, 11, 0.3)" onPress={() => props.change_graph(option)}>{option}</Button>
                                     )
                                 }else{
                                     return(
-                                        <Button mode="text" key={option} labelStyle={{ fontSize: 12, marginRight: 5, marginLeft: 5 }} style={{marginRight: 5}} textColor="#b8860b" rippleColor="rgba(184, 134, 11, 0.3)" onPress={() => props.change_graph(option)}>{option}</Button>
+                                        <Button mode="text" labelStyle={{ fontSize: 12, marginRight: 5, marginLeft: 5 }} style={{marginRight: 5}} textColor="#b8860b" rippleColor="rgba(184, 134, 11, 0.3)" onPress={() => props.change_graph(option)}>{option}</Button>
                                     )
                                 }
                             })()
                         }
-                    </>
+                    </Fragment>
                 )
             })}
         </>
