@@ -1,6 +1,6 @@
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, MD2Colors } from "react-native-paper";
-import { Text } from "react-native";
+import { Text, View, Pressable } from "react-native";
 
 
 export default function Stock_info_box(props){
@@ -13,7 +13,7 @@ export default function Stock_info_box(props){
             let counter = 0;
 
             setSearchResult(await props.stocks_symbol.filter(function(single_stock){
-                if((single_stock.description.includes(stock_string) || single_stock.displaySymbol.includes(stock_string)) && counter !== 10){
+                if((single_stock.description.startsWith(stock_string) || single_stock.displaySymbol.startsWith(stock_string)) && counter !== 30){
                     counter++;
                    return true; 
                 }else{
@@ -31,22 +31,23 @@ export default function Stock_info_box(props){
     useEffect(() => {
         stock_symbol_lookup(props.search);
     }, [props.search])
-    
-    if(searchLoading){
-        return(
-            <ActivityIndicator animating={true} color={MD2Colors.red800} />
-        )
-    }
 
     return(
         <>
-            {searchResult.map(single_stock => {
-                return(
-                    <Fragment key={single_stock.displaySymbol}>
-                        <Text>{single_stock.description}</Text>
-                    </Fragment>
-                )
-            })}
+            { searchLoading ? (
+                <ActivityIndicator animating={true} color={MD2Colors.red800} />
+            ) : (
+                searchResult.map(single_stock => {
+                    return(
+                        <Pressable onPress={() => props.navigation.navigate('Stock Details', {symbol: single_stock.displaySymbol, company_name: single_stock.description})} key={single_stock.displaySymbol}>
+                            <View style={{backgroundColor: "#deb887", margin: 10, borderWidth: 0, borderRadius: 10}}>
+                                <Text style={{margin: 10, marginBottom: 0, fontWeight: "bold", fontSize: 17}}>{single_stock.displaySymbol}</Text>
+                                <Text style={{margin: 10, marginTop: 0}}>{single_stock.description}</Text>
+                            </View>
+                        </Pressable>
+                    )
+                })
+            )}
         </>
     )
 }

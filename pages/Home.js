@@ -39,19 +39,18 @@ export default function Home({ navigation }){
                         onChangeText={(query) => {onChangeSearch(query); setNewSearchQuery(true)}}
                         value={searchQuery}
                         style={{backgroundColor: "#d2b48c", margin: 10}}
+						autoCorrect={false}
+						autoCapitalize="none"
                     />
                     {searchQuery !== "" && newSearchQuery ? (
 						stock_symbol_loading ? (
 							<ActivityIndicator animating={true} color={MD2Colors.red800} />
 						) : (
-                        	<Stock_info_box search={searchQuery} stocks_symbol={stocks_symbol} setNewSearchQuery={setNewSearchQuery}/>
+                        	<Stock_info_box search={searchQuery} stocks_symbol={stocks_symbol} setNewSearchQuery={setNewSearchQuery} navigation={navigation}/>
 						)
                     ) : (
 						<>
 							<Text style={{fontSize: 25, fontWeight: "bold",  margin: 10}}>Followed Stocks</Text>
-							<Button mode="contained" onPress={() => navigation.navigate('Stock Details')}>
-								Go to details
-							</Button>
 						</>
                     )}
                 </ScrollView>

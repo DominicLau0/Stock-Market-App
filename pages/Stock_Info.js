@@ -7,20 +7,25 @@ import { PaperProvider, ActivityIndicator, MD2Colors } from 'react-native-paper'
 import Stock_date_buttons from '../components/Stock_date_buttons';
 import Stock_news_component from '../components/Stock_news_component';
 
-export default function Stock_Info(){
+export default function Stock_Info({ route }){
     const [isLoading, setLoading] = useState(true);
-	const [companyLoading, setCompanyLoading] = useState(true);
 	const [newsLoading, setNewsLoading] = useState(true);
+	const [currentStockPriceLoading, setCurrentStockPriceLoading] = useState(true);
 
 	const [data, setData] = useState([]);
-	const [company_name, setCompanyName] = useState([]);
 	const [stock_option, setStockOption] = useState("1 Day");
-
 	const [news_list, setNewsList] = useState("");
+	const [current_stock_price, setCurrentStockPrice] = useState();
+
+	const { symbol, company_name } = route.params;
 
 	function change_graph(type){
 		if(type === "1 Day"){
-			stock_api_call("5", Math.floor(new Date().setHours(0,0,0)/1000));
+			if(new Date().getHours() >= 0 && new Date().getHours() < 4){
+				stock_api_call("5", Math.floor(new Date().setDate(new Date().getDate()-1)/1000));
+			}else{
+				stock_api_call("5", Math.floor(new Date().setHours(0,0,0)/1000));
+			}
 			setStockOption("1 Day");
 		}else if(type === "1 Week"){
 			stock_api_call("60", Math.floor(new Date().setDate(new Date().getDate()-7)/1000));
@@ -36,18 +41,33 @@ export default function Stock_Info(){
 			setStockOption("1 Year")
 		}
 	}
+
+	const stock_price_api = async () => {
+		try{
+			const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=ci57rnpr01qp1s6rj2fgci57rnpr01qp1s6rj2g0`);
+			const stock_price = await response.json();
+
+			setCurrentStockPrice(stock_price.c);
+		} catch(error){
+			console.error(error);
+		} finally {
+			setCurrentStockPriceLoading(false);
+		}
+	}
 	
 	const stock_api_call = async (resolution, beginning) => {
 		try{
 			let stock_array = [];
 
 			//Get stock quotes from finnhub
-			const response = await fetch(`https://finnhub.io/api/v1/stock/candle?symbol=AAPL&resolution=${resolution}&from=${beginning}&to=${Math.floor(Date.now()/1000)}&token=ci57rnpr01qp1s6rj2fgci57rnpr01qp1s6rj2g0`);
+			const response = await fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${beginning}&to=${Math.floor(Date.now()/1000)}&token=ci57rnpr01qp1s6rj2fgci57rnpr01qp1s6rj2g0`);
 			const stock = await response.json();
 
-			for(let i = 0; i<await stock.c.length; i++){
-				let json = {timestamp: stock.t[i]*1000, open: stock.o[i], high: stock.h[i], low: stock.l[i], close: stock.c[i]}
-				stock_array.push(json);
+			if(stock && stock.c){
+				for(let i = 0; i<await stock.c.length; i++){
+					let json = {timestamp: stock.t[i]*1000, open: stock.o[i], high: stock.h[i], low: stock.l[i], close: stock.c[i]}
+					stock_array.push(json);
+				}
 			}
 
 			setData(stock_array);
@@ -56,20 +76,6 @@ export default function Stock_Info(){
 			console.error(error);
 		} finally {
 			setLoading(false);
-		}
-	}
-
-	const company_info = async () => {
-		try{
-			const response = await fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=AAPL&token=ci57rnpr01qp1s6rj2fgci57rnpr01qp1s6rj2g0`);
-			let company_info_array = [];
-			company_info_array.push(await response.json());
-			setCompanyName(company_info_array);
-
-		}catch(error){
-			console.error(error);
-		} finally {
-			setCompanyLoading(false);
 		}
 	}
 
@@ -105,13 +111,13 @@ export default function Stock_Info(){
 			let last_week_date = date.getUTCFullYear() + "-" + last_week_month + "-" + last_week_day;
 
 			//Get news from finnhub
-			const get_news = await fetch(`https://finnhub.io/api/v1/company-news?symbol=AAPL&from=${last_week_date}&to=${current_date}&token=ci57rnpr01qp1s6rj2fgci57rnpr01qp1s6rj2g0`);
+			const get_news = await fetch(`https://finnhub.io/api/v1/company-news?symbol=${symbol}&from=${last_week_date}&to=${current_date}&token=ci57rnpr01qp1s6rj2fgci57rnpr01qp1s6rj2g0`);
 			const news = await get_news.json();
 
 			let counter = 0;
 
 			let news_array = await news.filter(function(single_news){
-				if(single_news.headline.includes("Apple") && counter!==10 && single_news.image !==""){
+				if(single_news.headline.toUpperCase().includes(company_name.replace(/,?\s*(llc|inc|co|corp)\.?$/i, '')) && counter!==10 && single_news.image !==""){
 					counter++;
 					return true;
 				}else{
@@ -129,21 +135,26 @@ export default function Stock_Info(){
 	}
 
 	useEffect(() => {
-		company_info();
+		change_graph("1 Day");
 		stock_api_call("5", Math.floor(new Date().setHours(0,0,0)/1000));
 		news_api();
+		stock_price_api();
+		const interval = setInterval(() => {
+			stock_price_api();
+		}, 5000)
+		return () => clearInterval(interval);
 	}, [])
 
 	return (
         <PaperProvider>
             <SafeAreaView style={{backgroundColor: "#ffdab9", height: "100%"}}>
                 <ScrollView>
-                    {companyLoading || isLoading || newsLoading ? (
+                    { isLoading || newsLoading || currentStockPriceLoading? (
                         <ActivityIndicator animating={true} color={MD2Colors.red800} />
                     ) : (
                         <>
-                            <Text style={{fontSize: 35, fontWeight: "bold", marginLeft: 20}}>{company_name[0].name}</Text>
-                            <Text style={{fontSize: 25, fontWeight: "500", marginLeft: 20}}>$127.27 USD</Text>
+                            <Text style={{fontSize: 35, fontWeight: "bold", marginLeft: 20}}>{company_name}</Text>
+                            <Text style={{fontSize: 25, fontWeight: "500", marginLeft: 20}}>${current_stock_price} USD</Text>
                             <GestureHandlerRootView>
                                 <CandlestickChart.Provider data={data}>
                                     <CandlestickChart>
@@ -184,7 +195,11 @@ export default function Stock_Info(){
                                 </CandlestickChart.Provider>
                             </GestureHandlerRootView>
                             <Text style={{fontSize: 30, fontWeight: "bold", marginLeft: 20, marginTop: 20, marginBottom: 10}}>News</Text>
-                            <Stock_news_component news={news_list} />
+							{ news_list.length === 0? (
+								<Text style={{marginLeft: 20, fontSize: 20}}>No news available.</Text>
+							) : (
+								<Stock_news_component news={news_list} />
+							)}
                         </>
                     )}
                 </ScrollView>
