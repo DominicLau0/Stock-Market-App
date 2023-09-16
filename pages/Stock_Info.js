@@ -21,6 +21,11 @@ export default function Stock_Info({ route }){
 
 	function change_graph(type){
 		if(type === "1 Day"){
+			if(new Date().getDay() === 6){
+				stock_api_call("5", Math.floor(new Date(new Date().setDate(new Date().getDate()-1)).setHours(0,0,0)/1000));
+			}else if(new Date().getDay() === 0){
+				stock_api_call("5", Math.floor(new Date(new Date().setDate(new Date().getDate()-2)).setHours(0,0,0)/1000));
+			}
 			if(new Date().getHours() >= 0 && new Date().getHours() < 4){
 				stock_api_call("5", Math.floor(new Date().setDate(new Date().getDate()-1)/1000));
 			}else{
@@ -194,9 +199,9 @@ export default function Stock_Info({ route }){
                                 </View>
                                 </CandlestickChart.Provider>
                             </GestureHandlerRootView>
-                            <Text style={{fontSize: 30, fontWeight: "bold", marginLeft: 20, marginTop: 20, marginBottom: 10}}>News</Text>
+                            <Text style={{fontSize: 30, fontWeight: "bold", marginLeft: 10, marginTop: 20, marginBottom: 10}}>News</Text>
 							{ news_list.length === 0? (
-								<Text style={{marginLeft: 20, fontSize: 20}}>No news available.</Text>
+								<Text style={{marginLeft: 20, fontSize: 20}}>No news available</Text>
 							) : (
 								<Stock_news_component news={news_list} />
 							)}

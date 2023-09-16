@@ -6,7 +6,7 @@ export default function Stock_date_buttons(props){
         props.news.map(single_news => {
             return (
                 <Pressable onPress={() => openBrowserAsync(single_news.url)} key={single_news.id}>
-                    <View style={{margin: 20, marginTop: 0, backgroundColor: "#f4a460", borderWidth: 0, borderRadius: 10, flexDirection: "row"}}>
+                    <View style={{margin: 10, marginTop: 0, backgroundColor: "#f4a460", borderWidth: 0, borderRadius: 10, flexDirection: "row", marginBottom: 15}}>
                         <Image
                             style={{width: 100, height: 100, borderWidth: 0, borderRadius: 10, margin: 10}}
                             src={single_news.image}
